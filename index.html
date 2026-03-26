@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTTLFA Mini Football Rules Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--green-dark:#0a3d1a;--green-mid:#1a6b35;--green-light:#2d9a4e;--green-turf:#3cb564;
+--gold:#f5c542;--gold-light:#ffe082;--white:#fafafa;--dark:#111;
+--red:#e74c3c;--blue:#3498db;--orange:#f39c12;
+}
+body{font-family:'Outfit',sans-serif;background:var(--green-dark);color:var(--white);min-height:100vh;overflow-x:hidden}
+.app{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+
+/* TURF PATTERN BG */
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+background:repeating-linear-gradient(90deg,rgba(255,255,255,.02) 0px,rgba(255,255,255,.02) 2px,transparent 2px,transparent 60px);
+pointer-events:none;z-index:0}
+
+/* SPLASH SCREEN */
+.splash{text-align:center;padding:60px 20px;animation:fadeUp .8s ease}
+.splash-badge{width:120px;height:120px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 30px;box-shadow:0 0 40px rgba(245,197,66,.3);position:relative}
+.splash-badge::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:3px dashed var(--gold-light);animation:spin 20s linear infinite}
+.splash-badge svg{width:60px;height:60px}
+.splash h1{font-size:2.4em;font-weight:900;letter-spacing:-.02em;line-height:1.1;margin-bottom:8px;
+background:linear-gradient(135deg,var(--white),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.splash h2{font-family:'Space Mono',monospace;font-size:.85em;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;margin-bottom:30px}
+.splash p{color:rgba(255,255,255,.7);max-width:500px;margin:0 auto 40px;line-height:1.6;font-size:.95em}
+.splash-stats{display:flex;justify-content:center;gap:40px;margin-bottom:40px}
+.splash-stat{text-align:center}
+.splash-stat .num{font-size:2em;font-weight:800;color:var(--gold)}
+.splash-stat .label{font-size:.75em;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-top:2px}
+
+/* NAME INPUT */
+.name-input-wrap{max-width:360px;margin:0 auto 30px;position:relative}
+.name-input{width:100%;padding:16px 20px;border:2px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.08);
+color:var(--white);font-family:'Outfit',sans-serif;font-size:1.05em;outline:none;transition:.3s}
+.name-input:focus{border-color:var(--gold);background:rgba(255,255,255,.12);box-shadow:0 0 20px rgba(245,197,66,.15)}
+.name-input::placeholder{color:rgba(255,255,255,.35)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:10px;padding:16px 36px;border:none;border-radius:60px;font-family:'Outfit',sans-serif;
+font-size:1.05em;font-weight:700;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.btn-primary{background:var(--gold);color:var(--green-dark)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(245,197,66,.4)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{background:rgba(255,255,255,.1);color:var(--white);border:2px solid rgba(255,255,255,.2)}
+.btn-secondary:hover{background:rgba(255,255,255,.2)}
+
+/* PROGRESS BAR */
+.progress-wrap{margin-bottom:30px}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.progress-label{font-family:'Space Mono',monospace;font-size:.8em;color:var(--gold);letter-spacing:.1em}
+.progress-score{font-weight:700;color:var(--gold)}
+.progress-bar{height:6px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green-light),var(--gold));border-radius:10px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* QUESTION CARD */
+.question-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:30px;
+animation:fadeUp .5s ease;backdrop-filter:blur(10px)}
+.question-num{font-family:'Space Mono',monospace;font-size:.75em;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
+.question-scenario{font-size:.9em;color:rgba(255,255,255,.6);margin-bottom:12px;line-height:1.5;font-style:italic;
+padding:12px 16px;background:rgba(255,255,255,.04);border-radius:10px;border-left:3px solid var(--gold)}
+.question-text{font-size:1.15em;font-weight:600;line-height:1.5;margin-bottom:24px}
+
+/* SVG SCENE */
+.scene-wrap{margin:20px 0;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.scene-wrap svg{display:block;width:100%}
+
+/* OPTIONS */
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:16px 20px;border:2px solid rgba(255,255,255,.12);border-radius:14px;cursor:pointer;transition:.3s;
+display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,.03)}
+.option:hover:not(.disabled){background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);transform:translateX(4px)}
+.option.selected{border-color:var(--blue);background:rgba(52,152,219,.12)}
+.option.correct{border-color:var(--green-light);background:rgba(45,154,78,.15);animation:correctPulse .5s ease}
+.option.wrong{border-color:var(--red);background:rgba(231,76,60,.12);animation:shake .4s ease}
+.option.disabled{cursor:default;opacity:.7}
+.option.disabled.was-correct{border-color:var(--green-light);background:rgba(45,154,78,.1);opacity:1}
+.option-letter{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;
+font-family:'Space Mono',monospace;font-size:.85em;font-weight:700;flex-shrink:0;transition:.3s}
+.option.correct .option-letter{background:var(--green-light);color:var(--dark)}
+.option.wrong .option-letter{background:var(--red);color:var(--white)}
+.option-text{font-size:.95em;line-height:1.5;padding-top:4px}
+
+/* EXPLANATION */
+.explanation{margin-top:20px;padding:16px 20px;border-radius:12px;font-size:.9em;line-height:1.6;animation:fadeUp .3s ease}
+.explanation.correct-exp{background:rgba(45,154,78,.12);border:1px solid rgba(45,154,78,.3);color:rgba(255,255,255,.9)}
+.explanation.wrong-exp{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);color:rgba(255,255,255,.9)}
+.explanation strong{color:var(--gold)}
+
+/* NEXT BUTTON */
+.next-wrap{margin-top:24px;text-align:right}
+
+/* RESULTS */
+.results{text-align:center;animation:fadeUp .8s ease;padding:40px 20px}
+.results-score-ring{width:180px;height:180px;margin:0 auto 30px;position:relative}
+.results-score-ring svg{transform:rotate(-90deg)}
+.results-score-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.results-score-text .big{font-size:3em;font-weight:900;color:var(--gold)}
+.results-score-text .small{font-size:.85em;color:rgba(255,255,255,.5)}
+.results h2{font-size:1.8em;font-weight:800;margin-bottom:8px}
+.results p{color:rgba(255,255,255,.6);margin-bottom:30px}
+.results-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:400px;margin:0 auto 30px}
+.rb-item{padding:16px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.rb-item .num{font-size:1.5em;font-weight:800}
+.rb-item .label{font-size:.75em;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-top:4px}
+.rb-item.correct-item .num{color:var(--green-light)}
+.rb-item.wrong-item .num{color:var(--red)}
+
+/* CERTIFICATE */
+.certificate{background:linear-gradient(135deg,#fffdf5,#fff8e1,#fffdf5);border-radius:16px;padding:50px 40px;color:var(--dark);
+position:relative;overflow:hidden;margin:30px auto;max-width:650px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.certificate::before{content:'';position:absolute;inset:8px;border:3px double var(--gold);border-radius:10px;pointer-events:none}
+.certificate::after{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(245,197,66,.15),transparent);pointer-events:none}
+.cert-header{text-align:center;margin-bottom:20px}
+.cert-badge{width:60px;height:60px;margin:0 auto 10px}
+.cert-title{font-size:.7em;letter-spacing:.3em;text-transform:uppercase;color:#888;margin-bottom:4px}
+.cert-main{font-size:1.6em;font-weight:900;color:var(--green-dark)}
+.cert-body{text-align:center;margin:20px 0}
+.cert-body p{color:#666;font-size:.9em;margin-bottom:10px}
+.cert-name{font-size:2em;font-weight:800;color:var(--green-dark);border-bottom:3px solid var(--gold);display:inline-block;padding-bottom:6px;margin:10px 0}
+.cert-details{font-size:.85em;color:#777;line-height:1.8}
+.cert-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;padding-top:20px;border-top:1px solid #e0d9c8}
+.cert-footer .org{font-weight:700;font-size:.85em;color:var(--green-dark)}
+.cert-footer .date{font-size:.8em;color:#999}
+.cert-seal{width:70px;height:70px}
+.cert-perfect{font-family:'Space Mono',monospace;font-size:.7em;background:var(--gold);color:var(--green-dark);padding:4px 14px;border-radius:20px;display:inline-block;margin-top:8px;font-weight:700}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes correctPulse{0%{box-shadow:0 0 0 0 rgba(45,154,78,.4)}100%{box-shadow:0 0 0 12px rgba(45,154,78,0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes confetti-fall{0%{transform:translateY(-100vh) rotate(0)}100%{transform:translateY(100vh) rotate(720deg)}}
+
+.confetti-piece{position:fixed;top:-20px;width:10px;height:10px;opacity:.8;animation:confetti-fall linear forwards;z-index:999;pointer-events:none}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+.splash h1{font-size:1.7em}
+.splash-stats{gap:24px}
+.question-card{padding:20px}
+.certificate{padding:30px 20px}
+.cert-name{font-size:1.4em}
+.cert-footer{flex-direction:column;align-items:center;gap:12px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+const QUESTIONS = [
+  {
+    scenario: "It's the 2nd period. Your team's goalkeeper from the 1st period asks to stay in goal again. The opposing coach hasn't been consulted.",
+    question: "Can the same player continue as goalkeeper in the 2nd period?",
+    options: [
+      "Yes — once a player is goalkeeper, they stay for the match",
+      "No — a different player MUST play in goal each period, unless both coaches agreed before kick-off",
+      "Yes — as long as the player wants to be in goal",
+      "No — goalkeepers can never play more than one period under any circumstances"
+    ],
+    correct: 1,
+    explanation: "A different player MUST play goalkeeper each period. The only exception is if both coaches agree BEFORE the match starts. The ref checks goalkeepers at the start of each period.",
+    scene: "goalkeeper_rotation"
+  },
+  {
+    scenario: "The ball goes out over the touchline. A player from the team awarded the restart picks up the ball and prepares to throw it in.",
+    question: "What's the correct restart when the ball crosses the touchline?",
+    options: [
+      "A throw-in, just like regular football",
+      "A kick-in — the ball is kicked back into play from the touchline",
+      "A drop ball from the referee",
+      "A free kick from the nearest corner"
+    ],
+    correct: 1,
+    explanation: "In CTTLFA mini football, restarts from the touchline are KICK-INS, not throw-ins. Opposition must stand 3 metres away.",
+    scene: "kickin"
+  },
+  {
+    scenario: "A player takes a kick-in from the touchline and shoots directly at goal. The ball flies into the net without touching anyone else.",
+    question: "What happens?",
+    options: [
+      "Goal! It counts because it was a clean strike",
+      "Goal kick to the defending team",
+      "No goal — the kick-in must be retaken because you cannot shoot directly from any dead ball situation",
+      "Corner kick to the attacking team"
+    ],
+    correct: 2,
+    explanation: "No direct shooting is permitted from dead ball situations (kick-in, free kick, corner). The ball must be played to a teammate first. Even if it deflects off someone, it must be retaken.",
+    scene: "direct_shot"
+  },
+  {
+    scenario: "The goalkeeper makes a diving save. She gets up, holds the ball, and boots it with a big kick out of her hands to a teammate.",
+    question: "Is this allowed?",
+    options: [
+      "Yes — goalkeepers can kick out of hand after a save",
+      "No — the goalkeeper can only throw or roll the ball back into play from a save",
+      "Yes — but only if the kick stays inside the team's half",
+      "No — the goalkeeper must place the ball for a goal kick"
+    ],
+    correct: 1,
+    explanation: "The goalkeeper CANNOT kick out of hand. After a save or when the ball crosses the goal line, the keeper can only throw or roll it. They can also drop it and pass once it's on the ground. No goal kicks either!",
+    scene: "keeper_kick"
+  },
+  {
+    scenario: "A defender passes the ball back to the goalkeeper, who picks it up with their hands inside the box.",
+    question: "What is the correct decision?",
+    options: [
+      "Play on — goalkeepers can always pick up the ball in their box",
+      "Indirect free kick from where the keeper picked up the ball",
+      "Indirect free kick from where the back pass was made (or just outside the box if the pass was inside it)",
+      "Penalty kick to the attacking team"
+    ],
+    correct: 2,
+    explanation: "The back pass rule applies. An indirect free kick is awarded from where the last pass was made. If the pass was inside the box, the free kick is taken from just outside the box at the nearest edge to where the keeper collected it.",
+    scene: "backpass"
+  },
+  {
+    scenario: "An attacker is standing right next to the opposing goalkeeper, well ahead of all defenders, waiting for a long ball. The referee blows the whistle.",
+    question: "Why did the referee stop play?",
+    options: [
+      "Offside — the standard offside rule applies",
+      "\"Camping\" — the player is more than 2m from the last defender and closer to the goal. While there's no formal offside, referees enforce anti-camping",
+      "No reason — there is no offside rule at all in mini football",
+      "Foul — attacking players can't be in the goal area"
+    ],
+    correct: 1,
+    explanation: "There's no formal offside rule, but \"camping\" is penalised. Camping is when a player is more than 2m from the last defender in the defending team, closer to the goalkeeper and goal. Refs speak to players and coaches about it.",
+    scene: "camping"
+  },
+  {
+    scenario: "A foul is committed inside the goal area. The referee awards a penalty.",
+    question: "From how far is the penalty taken?",
+    options: [
+      "From 12 yards (11 metres), like a standard penalty",
+      "From the edge of the goal area box",
+      "From 6 metres from the goal line",
+      "From wherever the foul occurred"
+    ],
+    correct: 2,
+    explanation: "Penalties in CTTLFA mini football are taken from 6 metres from the goal line — much shorter than standard football.",
+    scene: "penalty"
+  },
+  {
+    scenario: "A corner kick is taken. The ball curves directly into the net without touching any other player.",
+    question: "Does the goal stand?",
+    options: [
+      "Yes — a well-taken corner that goes in counts",
+      "No — goals cannot be scored directly from a corner; the ball must touch another player first",
+      "Yes — only if it doesn't touch the goalkeeper",
+      "No — corners aren't allowed; it should be a kick-in"
+    ],
+    correct: 1,
+    explanation: "No goals can be scored directly from any corner. Also, no direct shooting is allowed from any dead ball situation. The ball must be played to a teammate before a shot at goal.",
+    scene: "corner"
+  },
+  {
+    scenario: "It's a Club v Club match. One team arrives with 10 players and wants to register all of them in the squad.",
+    question: "Is this allowed?",
+    options: [
+      "Yes — there's no limit to squad size",
+      "No — the maximum squad is 8 players (5 on the field + 3 subs) for Club v Club",
+      "No — only 5 players can be registered",
+      "Yes — but only 6 can be on the team sheet"
+    ],
+    correct: 1,
+    explanation: "For Club v Club matches, each team can have a MAXIMUM of 8 players per squad (5v5 + 3 subs). Unlimited squad sizes are only allowed in Cluster Matches.",
+    scene: "squad"
+  },
+  {
+    scenario: "The ball goes over the goal line off a defender (missed shot by the attacker). The goalkeeper picks it up.",
+    question: "How does play restart?",
+    options: [
+      "Goal kick from the 6-yard line",
+      "Corner kick to the attacking team",
+      "The goalkeeper throws or rolls the ball back into play — no goal kicks are permitted",
+      "Drop ball at the edge of the box"
+    ],
+    correct: 2,
+    explanation: "No goal kicks are permitted in mini football. When the ball crosses the goal line (missed shot), the goalkeeper distributes by throwing or rolling it. They can also drop it and pass. Opposition must retreat 3 metres.",
+    scene: "goalkick"
+  }
+];
+
+function drawScene(type) {
+  const W = 700, H = 280;
+  const scenes = {
+    goalkeeper_rotation: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g1)"/>
+        <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+        <!-- Field lines -->
+        <rect x="20" y="80" width="120" height="160" rx="2" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+        <rect x="20" y="120" width="50" height="80" rx="2" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+        <!-- Goal -->
+        <rect x="8" y="130" width="14" height="60" rx="2" fill="none" stroke="white" stroke-width="3"/>
+        <!-- GK Period 1 -->
+        <circle cx="40" cy="160" r="18" fill="#e74c3c" stroke="white" stroke-width="2"/>
+        <text x="40" y="165" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="14">GK</text>
+        <text x="40" y="210" text-anchor="middle" fill="rgba(255,255,255,.8)" font-family="Space Mono" font-size="11">Period 1</text>
+        <!-- Arrow -->
+        <path d="M 100 160 C 160 100, 240 100, 300 160" fill="none" stroke="#f5c542" stroke-width="3" stroke-dasharray="8,4"/>
+        <polygon points="296,152 308,160 296,168" fill="#f5c542"/>
+        <!-- GK Period 2 (different player) -->
+        <circle cx="330" cy="160" r="18" fill="#3498db" stroke="white" stroke-width="2"/>
+        <text x="330" y="165" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="14">GK</text>
+        <text x="330" y="210" text-anchor="middle" fill="rgba(255,255,255,.8)" font-family="Space Mono" font-size="11">Period 2</text>
+        <!-- Arrow -->
+        <path d="M 390 160 C 440 100, 510 100, 560 160" fill="none" stroke="#f5c542" stroke-width="3" stroke-dasharray="8,4"/>
+        <polygon points="556,152 568,160 556,168" fill="#f5c542"/>
+        <!-- GK Period 3 -->
+        <circle cx="590" cy="160" r="18" fill="#9b59b6" stroke="white" stroke-width="2"/>
+        <text x="590" y="165" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="14">GK</text>
+        <text x="590" y="210" text-anchor="middle" fill="rgba(255,255,255,.8)" font-family="Space Mono" font-size="11">Period 3</text>
+        <!-- Label -->
+        <text x="350" y="50" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">DIFFERENT KEEPER EACH PERIOD</text>
+      </svg>`,
+    kickin: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g2)"/>
+        <!-- Touchline -->
+        <line x1="0" y1="240" x2="${W}" y2="240" stroke="white" stroke-width="3"/>
+        <text x="620" y="265" fill="rgba(255,255,255,.5)" font-family="Space Mono" font-size="11">TOUCHLINE</text>
+        <!-- Ball on line -->
+        <circle cx="300" cy="240" r="12" fill="white" stroke="#333" stroke-width="2"/>
+        <path d="M294 234 L306 234 L310 244 L300 250 L290 244Z" fill="#333" opacity=".3"/>
+        <!-- Kicker -->
+        <circle cx="300" cy="200" r="18" fill="#3498db" stroke="white" stroke-width="2"/>
+        <text x="300" y="205" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="12">KICK</text>
+        <!-- Foot arrow -->
+        <line x1="300" y1="218" x2="300" y2="232" stroke="#f5c542" stroke-width="3"/>
+        <polygon points="294,230 300,240 306,230" fill="#f5c542"/>
+        <!-- 3m zone -->
+        <line x1="160" y1="240" x2="160" y2="180" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="440" y1="240" x2="440" y2="180" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <text x="300" y="170" text-anchor="middle" fill="#e74c3c" font-family="Space Mono" font-size="11" font-weight="700">← 3m →</text>
+        <!-- Opponents behind line -->
+        <circle cx="130" cy="200" r="14" fill="#e74c3c" opacity=".6" stroke="white" stroke-width="1.5"/>
+        <circle cx="470" cy="195" r="14" fill="#e74c3c" opacity=".6" stroke="white" stroke-width="1.5"/>
+        <!-- Label -->
+        <text x="300" y="40" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">KICK-IN (NOT THROW-IN!)</text>
+        <!-- X over hands -->
+        <g transform="translate(520,100)">
+          <circle cx="0" cy="0" r="25" fill="rgba(231,76,60,.2)" stroke="#e74c3c" stroke-width="2"/>
+          <text x="0" y="5" text-anchor="middle" fill="white" font-size="18">🤾</text>
+          <line x1="-18" y1="-18" x2="18" y2="18" stroke="#e74c3c" stroke-width="3"/>
+        </g>
+      </svg>`,
+    direct_shot: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g3)"/>
+        <!-- Goal -->
+        <rect x="540" y="90" width="16" height="100" rx="2" fill="none" stroke="white" stroke-width="3"/>
+        <rect x="544" y="94" width="8" height="92" fill="rgba(255,255,255,.05)"/>
+        <!-- GK -->
+        <circle cx="540" cy="140" r="16" fill="#f39c12" stroke="white" stroke-width="2"/>
+        <text x="540" y="145" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="11">GK</text>
+        <!-- Kicker at touchline -->
+        <circle cx="100" cy="220" r="16" fill="#3498db" stroke="white" stroke-width="2"/>
+        <!-- Ball trajectory -->
+        <path d="M116 220 Q 350 60, 536 140" fill="none" stroke="white" stroke-width="2" stroke-dasharray="8,4"/>
+        <!-- Ball -->
+        <circle cx="116" cy="220" r="8" fill="white"/>
+        <!-- Big X -->
+        <g transform="translate(350,120)">
+          <circle cx="0" cy="0" r="35" fill="rgba(231,76,60,.25)" stroke="#e74c3c" stroke-width="3"/>
+          <line x1="-20" y1="-20" x2="20" y2="20" stroke="#e74c3c" stroke-width="4"/>
+          <line x1="20" y1="-20" x2="-20" y2="20" stroke="#e74c3c" stroke-width="4"/>
+        </g>
+        <text x="350" y="180" text-anchor="middle" fill="#e74c3c" font-family="Space Mono" font-weight="700" font-size="12">NO GOAL!</text>
+        <text x="350" y="40" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">NO DIRECT SHOT FROM DEAD BALL</text>
+        <text x="100" y="260" text-anchor="middle" fill="rgba(255,255,255,.6)" font-family="Space Mono" font-size="10">KICK-IN</text>
+      </svg>`,
+    keeper_kick: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g4)"/>
+        <!-- Goal -->
+        <rect x="30" y="100" width="14" height="80" rx="2" fill="none" stroke="white" stroke-width="3"/>
+        <!-- GK holding ball -->
+        <circle cx="90" cy="140" r="20" fill="#f39c12" stroke="white" stroke-width="2"/>
+        <text x="90" y="145" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="12">GK</text>
+        <!-- Ball in hands -->
+        <circle cx="110" cy="125" r="8" fill="white" stroke="#333" stroke-width="1.5"/>
+        <!-- WRONG: kick out of hand -->
+        <g transform="translate(300,80)">
+          <circle cx="0" cy="0" r="35" fill="rgba(231,76,60,.2)" stroke="#e74c3c" stroke-width="2.5"/>
+          <text x="0" y="-5" text-anchor="middle" fill="white" font-size="22">🦵</text>
+          <line x1="-22" y1="-22" x2="22" y2="22" stroke="#e74c3c" stroke-width="3.5"/>
+          <text x="0" y="55" text-anchor="middle" fill="#e74c3c" font-family="Space Mono" font-weight="700" font-size="11">NO PUNT!</text>
+        </g>
+        <!-- RIGHT: throw/roll -->
+        <g transform="translate(520,80)">
+          <circle cx="0" cy="0" r="35" fill="rgba(45,154,78,.2)" stroke="#2d9a4e" stroke-width="2.5"/>
+          <text x="0" y="6" text-anchor="middle" fill="white" font-size="16">THROW</text>
+          <text x="0" y="55" text-anchor="middle" fill="#2d9a4e" font-family="Space Mono" font-weight="700" font-size="11">ROLL / THROW ✓</text>
+        </g>
+        <text x="350" y="240" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">KEEPER CANNOT KICK OUT OF HAND</text>
+      </svg>`,
+    backpass: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g5)"/>
+        <!-- Goal box -->
+        <rect x="30" y="80" width="140" height="120" rx="2" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+        <!-- Goal -->
+        <rect x="18" y="110" width="14" height="60" rx="2" fill="none" stroke="white" stroke-width="3"/>
+        <!-- GK picking up ball -->
+        <circle cx="80" cy="140" r="18" fill="#f39c12" stroke="white" stroke-width="2"/>
+        <text x="80" y="145" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="12">GK</text>
+        <!-- Defender passing back -->
+        <circle cx="280" cy="160" r="16" fill="#3498db" stroke="white" stroke-width="2"/>
+        <!-- Pass line -->
+        <line x1="264" y1="158" x2="100" y2="142" stroke="white" stroke-width="2" stroke-dasharray="6,3"/>
+        <text x="180" y="135" text-anchor="middle" fill="rgba(255,255,255,.7)" font-family="Space Mono" font-size="10">BACK PASS</text>
+        <!-- Free kick spot -->
+        <g transform="translate(280,160)">
+          <circle cx="100" cy="0" r="6" fill="#f5c542"/>
+          <text x="100" y="25" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="10">FREE KICK</text>
+          <text x="100" y="38" text-anchor="middle" fill="rgba(255,255,255,.5)" font-family="Space Mono" font-size="9">(from pass spot)</text>
+        </g>
+        <!-- Whistle indicator -->
+        <text x="450" y="60" text-anchor="middle" fill="#e74c3c" font-family="Outfit" font-weight="700" font-size="16">📢 INDIRECT FREE KICK</text>
+        <text x="450" y="85" text-anchor="middle" fill="rgba(255,255,255,.6)" font-family="Space Mono" font-size="10">From where the pass was made</text>
+        <text x="450" y="100" text-anchor="middle" fill="rgba(255,255,255,.5)" font-family="Space Mono" font-size="10">(outside box if pass was inside)</text>
+      </svg>`,
+    camping: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g6)"/>
+        <!-- Half line -->
+        <line x1="350" y1="0" x2="350" y2="${H}" stroke="rgba(255,255,255,.3)" stroke-width="2" stroke-dasharray="6,4"/>
+        <!-- Goal -->
+        <rect x="645" y="100" width="14" height="60" rx="2" fill="none" stroke="white" stroke-width="3"/>
+        <!-- GK -->
+        <circle cx="630" cy="130" r="14" fill="#f39c12" stroke="white" stroke-width="2"/>
+        <text x="630" y="135" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="10">GK</text>
+        <!-- Last defender -->
+        <circle cx="540" cy="140" r="14" fill="#e74c3c" stroke="white" stroke-width="2"/>
+        <text x="540" y="175" text-anchor="middle" fill="rgba(255,255,255,.6)" font-family="Space Mono" font-size="9">LAST DEF</text>
+        <!-- Camping attacker -->
+        <circle cx="610" cy="130" r="16" fill="#3498db" stroke="#f5c542" stroke-width="3"/>
+        <text x="610" y="100" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="11">CAMPING!</text>
+        <!-- 2m indicator -->
+        <line x1="542" y1="200" x2="608" y2="200" stroke="#e74c3c" stroke-width="2"/>
+        <line x1="542" y1="195" x2="542" y2="205" stroke="#e74c3c" stroke-width="2"/>
+        <line x1="608" y1="195" x2="608" y2="205" stroke="#e74c3c" stroke-width="2"/>
+        <text x="575" y="220" text-anchor="middle" fill="#e74c3c" font-family="Space Mono" font-weight="700" font-size="11">> 2m apart</text>
+        <!-- Ref whistle -->
+        <text x="200" y="80" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">ANTI-CAMPING RULE</text>
+        <text x="200" y="140" text-anchor="middle" fill="rgba(255,255,255,.7)" font-family="Outfit" font-size="13">Player is > 2m from last defender</text>
+        <text x="200" y="165" text-anchor="middle" fill="rgba(255,255,255,.7)" font-family="Outfit" font-size="13">and closer to goalkeeper/goal</text>
+        <text x="200" y="195" text-anchor="middle" fill="#e74c3c" font-family="Outfit" font-weight="700" font-size="14">= Referee intervenes</text>
+      </svg>`,
+    penalty: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g7" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g7)"/>
+        <!-- Goal (centered) -->
+        <rect x="250" y="20" width="200" height="12" rx="2" fill="none" stroke="white" stroke-width="3"/>
+        <line x1="250" y1="20" x2="250" y2="50" stroke="white" stroke-width="3"/>
+        <line x1="450" y1="20" x2="450" y2="50" stroke="white" stroke-width="3"/>
+        <!-- Net pattern -->
+        <rect x="254" y="22" width="192" height="26" fill="rgba(255,255,255,.05)"/>
+        <!-- GK on line -->
+        <circle cx="350" cy="45" r="16" fill="#f39c12" stroke="white" stroke-width="2"/>
+        <text x="350" y="50" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="11">GK</text>
+        <!-- 6m mark -->
+        <circle cx="350" cy="140" r="6" fill="white"/>
+        <text x="350" y="165" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13">6 METRES</text>
+        <!-- Distance indicator -->
+        <line x1="350" y1="55" x2="350" y2="134" stroke="#f5c542" stroke-width="2" stroke-dasharray="5,3"/>
+        <!-- Kicker -->
+        <circle cx="350" cy="200" r="18" fill="#3498db" stroke="white" stroke-width="2"/>
+        <text x="350" y="205" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="12">PK</text>
+        <!-- Labels -->
+        <text x="350" y="260" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">PENALTY = 6m FROM GOAL LINE</text>
+        <!-- Comparison -->
+        <text x="100" y="120" text-anchor="middle" fill="rgba(255,255,255,.4)" font-family="Space Mono" font-size="10">Standard: 11m</text>
+        <text x="100" y="140" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="11">Mini: 6m</text>
+      </svg>`,
+    corner: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g8" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g8)"/>
+        <!-- Corner area -->
+        <path d="M 0 ${H} L 140 ${H} L 140 80 L 0 80 Z" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+        <!-- Goal -->
+        <rect x="0" y="140" width="14" height="60" rx="2" fill="none" stroke="white" stroke-width="3"/>
+        <!-- Corner arc -->
+        <path d="M 30 ${H} Q 0 ${H-30}, 0 ${H-40}" fill="none" stroke="white" stroke-width="2"/>
+        <!-- Ball at corner -->
+        <circle cx="8" cy="${H-8}" r="8" fill="white" stroke="#333" stroke-width="1.5"/>
+        <!-- Kicker -->
+        <circle cx="35" cy="${H-30}" r="16" fill="#3498db" stroke="white" stroke-width="2"/>
+        <!-- Ball trajectory to goal -->
+        <path d="M 16 ${H-12} Q 200 60, 10 170" fill="none" stroke="white" stroke-width="2" stroke-dasharray="8,4"/>
+        <!-- Big X on trajectory -->
+        <g transform="translate(150,130)">
+          <circle cx="0" cy="0" r="30" fill="rgba(231,76,60,.2)" stroke="#e74c3c" stroke-width="2.5"/>
+          <line x1="-16" y1="-16" x2="16" y2="16" stroke="#e74c3c" stroke-width="3.5"/>
+          <line x1="16" y1="-16" x2="-16" y2="16" stroke="#e74c3c" stroke-width="3.5"/>
+        </g>
+        <!-- Correct: pass to teammate -->
+        <circle cx="200" cy="220" r="16" fill="#3498db" stroke="white" stroke-width="2"/>
+        <path d="M 16 ${H-12} Q 80 200, 184 220" fill="none" stroke="#2d9a4e" stroke-width="3"/>
+        <polygon points="180,214 190,220 180,226" fill="#2d9a4e"/>
+        <text x="200" y="255" text-anchor="middle" fill="#2d9a4e" font-family="Space Mono" font-size="10" font-weight="700">PASS FIRST ✓</text>
+        <!-- Labels -->
+        <text x="480" y="60" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">NO DIRECT GOALS</text>
+        <text x="480" y="85" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">FROM CORNERS</text>
+        <text x="480" y="140" text-anchor="middle" fill="rgba(255,255,255,.7)" font-family="Outfit" font-size="13">Must play to a teammate</text>
+        <text x="480" y="165" text-anchor="middle" fill="rgba(255,255,255,.7)" font-family="Outfit" font-size="13">before shooting at goal</text>
+        <text x="480" y="210" text-anchor="middle" fill="rgba(255,255,255,.5)" font-family="Outfit" font-size="12">Opponents 3m away</text>
+      </svg>`,
+    squad: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g9" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g9)"/>
+        <!-- Club v Club side -->
+        <text x="180" y="40" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="1">CLUB v CLUB</text>
+        <text x="180" y="60" text-anchor="middle" fill="rgba(255,255,255,.5)" font-family="Space Mono" font-size="10">MAX 8 PLAYERS</text>
+        <!-- 5 on field -->
+        ${[0,1,2,3,4].map((i,_)=>`<circle cx="${100+i*40}" cy="100" r="14" fill="#3498db" stroke="white" stroke-width="2"/>`).join('')}
+        <text x="180" y="135" text-anchor="middle" fill="rgba(255,255,255,.6)" font-family="Space Mono" font-size="10">5 ON FIELD</text>
+        <!-- 3 subs -->
+        ${[0,1,2].map((i)=>`<circle cx="${140+i*40}" cy="170" r="14" fill="#3498db" opacity=".5" stroke="white" stroke-width="1.5" stroke-dasharray="4,2"/>`).join('')}
+        <text x="180" y="205" text-anchor="middle" fill="rgba(255,255,255,.4)" font-family="Space Mono" font-size="10">3 SUBS</text>
+        <!-- Divider -->
+        <line x1="360" y1="20" x2="360" y2="260" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+        <!-- Cluster side -->
+        <text x="530" y="40" text-anchor="middle" fill="#2d9a4e" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="1">CLUSTER MATCHES</text>
+        <text x="530" y="60" text-anchor="middle" fill="rgba(255,255,255,.5)" font-family="Space Mono" font-size="10">UNLIMITED SQUAD</text>
+        ${[0,1,2,3,4,5,6,7].map((i)=>`<circle cx="${420+i*28}" cy="100" r="12" fill="#2d9a4e" stroke="white" stroke-width="1.5"/>`).join('')}
+        ${[0,1,2,3,4,5].map((i)=>`<circle cx="${435+i*35}" cy="140" r="12" fill="#2d9a4e" opacity=".5" stroke="white" stroke-width="1.5" stroke-dasharray="3,2"/>`).join('')}
+        <text x="530" y="180" text-anchor="middle" fill="rgba(255,255,255,.4)" font-family="Space Mono" font-size="10">+ MORE...</text>
+        <!-- Extra players with X for club -->
+        <circle cx="260" cy="170" r="14" fill="#e74c3c" opacity=".3" stroke="#e74c3c" stroke-width="2"/>
+        <line x1="252" y1="162" x2="268" y2="178" stroke="#e74c3c" stroke-width="2"/>
+        <line x1="268" y1="162" x2="252" y2="178" stroke="#e74c3c" stroke-width="2"/>
+        <text x="290" y="175" fill="#e74c3c" font-family="Space Mono" font-size="9">9th = NOT ALLOWED</text>
+      </svg>`,
+    goalkick: `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g10" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d9a4e"/><stop offset="100%" stop-color="#1a6b35"/></linearGradient></defs>
+        <rect width="${W}" height="${H}" fill="url(#g10)"/>
+        <!-- Goal line -->
+        <line x1="0" y1="240" x2="${W}" y2="240" stroke="white" stroke-width="3"/>
+        <text x="350" y="265" text-anchor="middle" fill="rgba(255,255,255,.4)" font-family="Space Mono" font-size="10">GOAL LINE</text>
+        <!-- Goal -->
+        <rect x="270" y="240" width="160" height="14" fill="none" stroke="white" stroke-width="3"/>
+        <!-- GK -->
+        <circle cx="350" cy="200" r="20" fill="#f39c12" stroke="white" stroke-width="2"/>
+        <text x="350" y="205" text-anchor="middle" fill="white" font-family="Outfit" font-weight="700" font-size="12">GK</text>
+        <!-- Ball in hands -->
+        <circle cx="370" cy="185" r="8" fill="white" stroke="#333" stroke-width="1.5"/>
+        <!-- Throw/roll arrows -->
+        <path d="M 380 185 Q 430 130, 500 120" fill="none" stroke="#2d9a4e" stroke-width="3"/>
+        <polygon points="496,114 506,120 496,126" fill="#2d9a4e"/>
+        <text x="500" y="108" fill="#2d9a4e" font-family="Space Mono" font-weight="700" font-size="11">THROW ✓</text>
+        <path d="M 380 200 L 500 200" fill="none" stroke="#2d9a4e" stroke-width="3"/>
+        <polygon points="496,194 506,200 496,206" fill="#2d9a4e"/>
+        <text x="510" y="196" fill="#2d9a4e" font-family="Space Mono" font-weight="700" font-size="11">ROLL ✓</text>
+        <!-- No goal kick -->
+        <g transform="translate(130,130)">
+          <circle cx="0" cy="0" r="35" fill="rgba(231,76,60,.15)" stroke="#e74c3c" stroke-width="2"/>
+          <text x="0" y="-5" text-anchor="middle" fill="white" font-family="Outfit" font-size="11">GOAL</text>
+          <text x="0" y="10" text-anchor="middle" fill="white" font-family="Outfit" font-size="11">KICK</text>
+          <line x1="-22" y1="-22" x2="22" y2="22" stroke="#e74c3c" stroke-width="3"/>
+        </g>
+        <text x="130" y="185" text-anchor="middle" fill="#e74c3c" font-family="Space Mono" font-weight="700" font-size="10">NOT PERMITTED</text>
+        <!-- Opponents retreat -->
+        <text x="350" y="40" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="13" letter-spacing="2">NO GOAL KICKS — GK DISTRIBUTES</text>
+        <text x="350" y="65" text-anchor="middle" fill="rgba(255,255,255,.5)" font-family="Space Mono" font-size="10">Opponents retreat 3m</text>
+      </svg>`
+  };
+  return scenes[type] || '';
+}
+
+let state = { screen:'splash', name:'', current:0, answers:[], showResult:false };
+
+function render() {
+  const app = document.getElementById('app');
+  if (state.screen === 'splash') renderSplash(app);
+  else if (state.screen === 'quiz') renderQuiz(app);
+  else if (state.screen === 'results') renderResults(app);
+}
+
+function renderSplash(app) {
+  app.innerHTML = `
+    <div class="splash">
+      <div class="splash-badge">
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="30" cy="30" r="24" fill="#0a3d1a"/>
+          <path d="M30 10 L30 50 M10 30 L50 30 M16 16 L44 44 M44 16 L16 44" stroke="white" stroke-width="1.5" opacity=".3"/>
+          <circle cx="30" cy="30" r="12" fill="none" stroke="white" stroke-width="2"/>
+          <circle cx="30" cy="30" r="3" fill="white"/>
+        </svg>
+      </div>
+      <h1>Mini Football<br>Rules Challenge</h1>
+      <h2>CTTLFA U7 · U8 · U9</h2>
+      <p>Think you know the rules? This 10-question situational test will challenge your knowledge of CTTLFA mini football match day rules. You need a perfect 10/10 to earn your certificate.</p>
+      <div class="splash-stats">
+        <div class="splash-stat"><div class="num">10</div><div class="label">Questions</div></div>
+        <div class="splash-stat"><div class="num">100%</div><div class="label">To Pass</div></div>
+        <div class="splash-stat"><div class="num">⚽</div><div class="label">Let's Go</div></div>
+      </div>
+      <div class="name-input-wrap">
+        <input class="name-input" type="text" placeholder="Enter your full name..." id="nameInput" maxlength="40" value="${state.name}"/>
+      </div>
+      <button class="btn btn-primary" id="startBtn" ${!state.name.trim()?'disabled':''}>
+        Start the Challenge
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>`;
+  const inp = document.getElementById('nameInput');
+  inp.addEventListener('input', e => { state.name = e.target.value; document.getElementById('startBtn').disabled = !state.name.trim(); });
+  inp.addEventListener('keydown', e => { if(e.key==='Enter' && state.name.trim()) startQuiz(); });
+  document.getElementById('startBtn').addEventListener('click', startQuiz);
+}
+
+function startQuiz() { state.screen='quiz'; state.current=0; state.answers=[]; state.showResult=false; render(); }
+
+function renderQuiz(app) {
+  const q = QUESTIONS[state.current];
+  const ans = state.answers[state.current];
+  const answered = ans !== undefined;
+  const isCorrect = ans === q.correct;
+  const letters = ['A','B','C','D'];
+
+  app.innerHTML = `
+    <div class="progress-wrap">
+      <div class="progress-header">
+        <span class="progress-label">QUESTION ${state.current+1} OF ${QUESTIONS.length}</span>
+        <span class="progress-score">${state.answers.filter((a,i)=>a===QUESTIONS[i].correct).length} correct</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${((state.current+(answered?1:0))/QUESTIONS.length)*100}%"></div></div>
+    </div>
+    <div class="question-card" key="${state.current}">
+      <div class="question-num">Scenario ${state.current+1}</div>
+      <div class="question-scenario">${q.scenario}</div>
+      <div class="question-text">${q.question}</div>
+      <div class="options">
+        ${q.options.map((opt, i) => {
+          let cls = 'option';
+          if (answered) {
+            cls += ' disabled';
+            if (i === q.correct) cls += ' correct was-correct';
+            else if (i === ans && !isCorrect) cls += ' wrong';
+          } else if (state._selected === i) {
+            cls += ' selected';
+          }
+          return `<div class="${cls}" data-idx="${i}">
+            <div class="option-letter">${answered && i===q.correct?'✓': answered && i===ans && !isCorrect?'✗':letters[i]}</div>
+            <div class="option-text">${opt}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      ${answered ? `
+        <div class="explanation ${isCorrect?'correct-exp':'wrong-exp'}">
+          ${isCorrect?'✅ <strong>Correct!</strong>':'❌ <strong>Incorrect.</strong>'} ${q.explanation}
+        </div>
+        <div class="scene-wrap" style="margin-top:16px">${drawScene(q.scene)}</div>
+        <div class="next-wrap">
+          <button class="btn btn-primary" id="nextBtn">
+            ${state.current < QUESTIONS.length-1 ? 'Next Question →' : 'See Results →'}
+          </button>
+        </div>
+      ` : ''}
+    </div>`;
+
+  if (!answered) {
+    document.querySelectorAll('.option').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.idx);
+        state.answers[state.current] = idx;
+        render();
+      });
+    });
+  }
+  if (answered) {
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (state.current < QUESTIONS.length - 1) { state.current++; state._selected=undefined; render(); }
+      else { state.screen = 'results'; render(); }
+    });
+  }
+}
+
+function renderResults(app) {
+  const correct = state.answers.filter((a,i) => a === QUESTIONS[i].correct).length;
+  const pct = correct / QUESTIONS.length;
+  const perfect = correct === QUESTIONS.length;
+  const circumference = 2 * Math.PI * 70;
+  const offset = circumference - (pct * circumference);
+  const today = new Date().toLocaleDateString('en-ZA', {year:'numeric',month:'long',day:'numeric'});
+
+  let html = `<div class="results">
+    <div class="results-score-ring">
+      <svg width="180" height="180">
+        <circle cx="90" cy="90" r="70" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="10"/>
+        <circle cx="90" cy="90" r="70" fill="none" stroke="${perfect?'#f5c542':'#e74c3c'}" stroke-width="10"
+          stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"
+          style="transition:stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)"/>
+      </svg>
+      <div class="results-score-text">
+        <div class="big">${correct}</div>
+        <div class="small">out of ${QUESTIONS.length}</div>
+      </div>
+    </div>
+    <h2>${perfect?'🏆 Perfect Score!':correct>=7?'Almost There!':'Keep Studying!'}</h2>
+    <p>${perfect?'You\'ve demonstrated mastery of the CTTLFA Mini Football rules.':correct>=7?'Great effort! Review the rules and try again for your certificate.':'Review the match day rules document and give it another go.'}</p>
+    <div class="results-breakdown">
+      <div class="rb-item correct-item"><div class="num">${correct}</div><div class="label">Correct</div></div>
+      <div class="rb-item wrong-item"><div class="num">${QUESTIONS.length-correct}</div><div class="label">Incorrect</div></div>
+    </div>`;
+
+  if (perfect) {
+    html += `
+    <div class="certificate" id="certificate">
+      <div class="cert-header">
+        <div class="cert-badge">
+          <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="30" r="28" fill="#0a3d1a"/>
+            <circle cx="30" cy="30" r="24" fill="none" stroke="#f5c542" stroke-width="2"/>
+            <path d="M30 14 L30 46 M14 30 L46 30" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
+            <circle cx="30" cy="30" r="10" fill="none" stroke="white" stroke-width="1.5"/>
+            <circle cx="30" cy="30" r="2.5" fill="white"/>
+            <text x="30" y="52" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-size="5" font-weight="700">CTTLFA</text>
+          </svg>
+        </div>
+        <div class="cert-title">Certificate of Competency</div>
+        <div class="cert-main">Mini Football Rules</div>
+      </div>
+      <div class="cert-body">
+        <p>This certifies that</p>
+        <div class="cert-name">${state.name}</div>
+        <div class="cert-details">
+          has successfully demonstrated full competency in the<br>
+          <strong>CTTLFA Under 7-8-9 Match Day Rules</strong><br>
+          by achieving a perfect score of <strong>10 out of 10</strong>
+        </div>
+        <div class="cert-perfect">⚽ PERFECT SCORE ⚽</div>
+      </div>
+      <div class="cert-footer">
+        <div>
+          <div class="org">Cape Town Tygerberg Local<br>Football Association</div>
+          <div class="date">${today}</div>
+        </div>
+        <div class="cert-seal">
+          <svg viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">
+            ${Array.from({length:12},(_,i)=>{const a=i*30*Math.PI/180;return`<line x1="${35+20*Math.cos(a)}" y1="${35+20*Math.sin(a)}" x2="${35+30*Math.cos(a)}" y2="${35+30*Math.sin(a)}" stroke="#f5c542" stroke-width="2"/>`}).join('')}
+            <circle cx="35" cy="35" r="22" fill="#0a3d1a" stroke="#f5c542" stroke-width="2"/>
+            <text x="35" y="33" text-anchor="middle" fill="#f5c542" font-family="Space Mono" font-weight="700" font-size="7">VERIFIED</text>
+            <text x="35" y="42" text-anchor="middle" fill="rgba(255,255,255,.6)" font-family="Space Mono" font-size="5">CTTLFA</text>
+          </svg>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  html += `<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+    <button class="btn btn-primary" id="retryBtn">Try Again</button>
+    ${perfect?'<button class="btn btn-secondary" id="printBtn">Print Certificate</button>':''}
+  </div></div>`;
+
+  app.innerHTML = html;
+  document.getElementById('retryBtn').addEventListener('click', () => { state.screen='splash'; state.answers=[]; state.current=0; render(); });
+  if (perfect) {
+    document.getElementById('printBtn').addEventListener('click', () => {
+      const cert = document.getElementById('certificate');
+      const w = window.open('','','width=750,height=550');
+      w.document.write(`<html><head><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"><style>body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fff;margin:0}${document.querySelector('style').textContent}</style></head><body>${cert.outerHTML}</body></html>`);
+      w.document.close();
+      setTimeout(()=>{w.print()},500);
+    });
+    launchConfetti();
+  }
+}
+
+function launchConfetti() {
+  const colors = ['#f5c542','#2d9a4e','#3498db','#e74c3c','#9b59b6','#fff'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random()*100+'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.width = (6+Math.random()*8)+'px';
+    el.style.height = (6+Math.random()*8)+'px';
+    el.style.borderRadius = Math.random()>.5?'50%':'2px';
+    el.style.animationDuration = (2+Math.random()*3)+'s';
+    el.style.animationDelay = Math.random()*2+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 6000);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
